@@ -16,23 +16,26 @@ import org.springframework.batch.item.file.mapping.BeanWrapperFieldSetMapper;
 import org.springframework.batch.item.file.mapping.DefaultLineMapper;
 import org.springframework.batch.item.file.transform.BeanWrapperFieldExtractor;
 import org.springframework.batch.item.file.transform.DelimitedLineTokenizer;
+import org.springframework.batch.item.support.CompositeItemProcessor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.Resource;
 
+import java.util.ArrayList;
+import java.util.List;
+
 
 @Configuration
 @EnableBatchProcessing // pour activer springBatch
 public class SpringBatchConfig {
     // pour creer un job
-    @Autowired
-    private JobBuilderFactory jobBuilderFactory;
+    @Autowired private JobBuilderFactory jobBuilderFactory;
     @Autowired private StepBuilderFactory stepBuilderFactory;
     @Autowired private ItemReader<BankTransaction /* input */> bankTransactionItemReader;
     @Autowired private ItemWriter<BankTransaction /* output */> bankTransactionItemWriter;
-    @Autowired private ItemProcessor<BankTransaction/* input */, BankTransaction /* output mais les données vont changer*/> bankTransactionItemProcessor;
+    // @Autowired private ItemProcessor<BankTransaction/* input */, BankTransaction /* output mais les données vont changer*/> bankTransactionItemProcessor;
 
 
     // une methode de config qui permet de retourner un JOB
@@ -42,13 +45,16 @@ public class SpringBatchConfig {
         Step step=stepBuilderFactory.get("step-load-data")
                 .<BankTransaction,BankTransaction>chunk(100)
                 .reader(bankTransactionItemReader)
-                .processor(bankTransactionItemProcessor)
+//                .processor(bankTransactionItemProcessor) qd j'avais un seul processor
+                .processor(compositeItemProcessor())
                 .writer(bankTransactionItemWriter)
                 .build();
 
         // retourner le job
         return jobBuilderFactory.get("bank-data-loader-job").start(step).build();
     }
+
+
 
 
     // creer mon itemReader ( pour les fichier plats)
@@ -76,6 +82,27 @@ public class SpringBatchConfig {
         fieldSetMapper.setTargetType(BankTransaction.class);
         lineMapper.setFieldSetMapper(fieldSetMapper);
         return lineMapper;
+    }
+
+
+    @Bean
+    public ItemProcessor< BankTransaction, BankTransaction> compositeItemProcessor() {
+        List<ItemProcessor<BankTransaction,BankTransaction>> itemProcessors = new ArrayList<>();
+        itemProcessors.add(itemProcessor1());
+        itemProcessors.add(itemProcessor2());
+
+        CompositeItemProcessor<BankTransaction,BankTransaction> compositeItemProcessor = new CompositeItemProcessor<>();
+        compositeItemProcessor.setDelegates(itemProcessors);
+        return compositeItemProcessor;
+    }
+
+    @Bean
+    BankTransactionItemProcessor itemProcessor1() {
+        return new BankTransactionItemProcessor();
+    }
+    @Bean
+    BankTransactionItemAnalyticsProcessor itemProcessor2() {
+        return new BankTransactionItemAnalyticsProcessor();
     }
 
 
