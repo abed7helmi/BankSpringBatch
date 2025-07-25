@@ -19,7 +19,7 @@ public class JobRestController {
     @Autowired
     private Job job;
 
-    @GetMapping("/stardJob")
+    @GetMapping("/startJob")
     public BatchStatus load() throws Exception {
         // parametrer l'execution
         Map<String, JobParameter> params = new HashMap<String, JobParameter>();
