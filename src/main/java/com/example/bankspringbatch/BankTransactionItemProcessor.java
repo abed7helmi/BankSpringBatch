@@ -8,6 +8,7 @@ import java.text.SimpleDateFormat;
 
 @Component
 public class BankTransactionItemProcessor implements ItemProcessor <BankTransaction, BankTransaction> {
+    // pour formater les dates
     private SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy-HH:mm");
 
 
