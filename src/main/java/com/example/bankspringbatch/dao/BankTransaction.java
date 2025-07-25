@@ -23,7 +23,7 @@ public class BankTransaction {
     private Date transactionDate ;
     @Transient
     private String strTransactionDate;
-    private String TransactionType;
+    private String transactionType;
     private double amount;
 
 }
