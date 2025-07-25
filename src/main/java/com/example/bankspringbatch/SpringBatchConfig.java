@@ -36,6 +36,7 @@ public class SpringBatchConfig {
 
 
     // une methode de config qui permet de retourner un JOB
+    @Bean
     public Job myJob() {
         //creer le step
         Step step=stepBuilderFactory.get("step-load-data")
